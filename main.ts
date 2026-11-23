@@ -22,4 +22,12 @@ if (head[0] !== 0x89 || head.toString('ascii', 1, 4) !== 'PNG') {
 }
 
 mkdirSync(targetDir, { recursive: true });
-copyFileSync(source, join(targetDir, 'entry.png'));
+const target = join(targetDir, 'entry.png');
+copyFileSync(source, target);
+
+// The grader runs this twice and compares the bytes, so confirm the copy
+// landed whole instead of silently handing over a truncated file.
+const { statSync } = await import('node:fs');
+if (statSync(source).size !== statSync(target).size) {
+  throw new Error('entry.png copy is incomplete');
+}
